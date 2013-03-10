@@ -53,9 +53,7 @@ sub new
 {
   my $class = shift;
 
-  my $self = bless {
-    $class->_normalize_args( @_ )
-  }, $class;
+  my $self = bless { @_ }, $class;
 
   if ( $self->{key} and $self->{secret} )
   {
@@ -73,7 +71,7 @@ sub new
   }
   else
   {
-    carp "ERROR: Required parameters missing.";
+    carp "ERROR: Please specify the 'key' and 'secret' parameters.";
   }
 }
 
@@ -147,7 +145,7 @@ The C<verifier> PIN parameter is required.
 sub authorize
 {
   my $self = shift;
-  my %args = $self->_normalize_args( @_ );
+  my %args = @_;
 
   if ( $args{verifier} )
   {
@@ -188,7 +186,7 @@ sub authorize
   }
   else
   {
-    carp "ERROR: Authorization Verifier needed.";
+    carp "ERROR: Authorization 'verifier' needed.";
   }
 }
 
@@ -201,20 +199,6 @@ Generate a unique 'nonce' to be used on each request.
 =cut
 
 sub _nonce { join( '', rand_chars( size => 16, set => 'alphanumeric' )); }
-
-=head2 _normalize_args
-
-Simple convenience method that lower-cases all argument names.
-
-=cut
-
-sub _normalize_args
-{
-  my $class = shift;
-  my %args = @_;
-
-  return map { lc $_ => $args{$_} } keys %args;
-}
 
 =head1 AUTHOR
 
