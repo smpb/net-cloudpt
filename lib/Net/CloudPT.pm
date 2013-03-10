@@ -67,6 +67,8 @@ sub new
     $self->{api_endpoint}     ||= 'https://publicapi.cloudpt.pt';
     $self->{content_endpoint} ||= 'https://api-content.cloudpt.pt';
 
+    $self->{debug} ||= $ENV{DEBUG};
+
     return $self;
   }
   else
@@ -115,14 +117,14 @@ sub login
     $self->{request_token}  = $response->token;
     $self->{request_secret} = $response->token_secret;
 
-    cluck "Request Token: '"   . $self->{request_token}   . "'" if ( $ENV{DEBUG} );
-    cluck "Request Secret: '"  . $self->{request_secret}  . "'" if ( $ENV{DEBUG} );
+    cluck "Request Token: '"   . $self->{request_token}   . "'" if ( $self->{debug} );
+    cluck "Request Secret: '"  . $self->{request_secret}  . "'" if ( $self->{debug} );
 
     my $authorize = $self->{authorize_url} . '?oauth_token=' . $self->{request_token};
     $authorize .= '&oauth_callback=' . $self->{callback_url}
       if ( defined $self->{callback_url} and $self->{callback_url} ne 'oob' );
 
-    cluck "Authorization URL: '$authorize'" if ( $ENV{DEBUG} );
+    cluck "Authorization URL: '$authorize'" if ( $self->{debug} );
 
     # ok
     return $authorize;
@@ -177,8 +179,8 @@ sub authorize
       $self->{access_token}  = $response->token;
       $self->{access_secret} = $response->token_secret;
 
-      cluck "Access Token: '"   . $self->{access_token} . "'" if ( $ENV{DEBUG} );
-      cluck "Access Secret: '"  . $self->{access_secret} . "'" if ( $ENV{DEBUG} );
+      cluck "Access Token: '"   . $self->{access_token} . "'"   if ( $self->{debug} );
+      cluck "Access Secret: '"  . $self->{access_secret} . "'"  if ( $self->{debug} );
 
       # ok
       return 1;
