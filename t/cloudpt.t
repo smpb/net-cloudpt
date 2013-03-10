@@ -44,7 +44,7 @@ SKIP:
 
   like($pin, '/\d{10}/', 'The PIN is a 10-digit number');
 
-  ok($cloud->auth( verifier => $pin ), 'Authorized');
+  ok($cloud->authorize( verifier => $pin ), 'Authorized');
 }
 
 done_testing;
