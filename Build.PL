@@ -17,7 +17,6 @@ my $build = Module::Build->new(
     'Data::Random'          => 0,
     'LWP::UserAgent'        => 0,
     'LWP::Protocol::https'  => 0,
-    'HTTP::Request::Common' => 0,
   },
   build_requires => {
     'Test::More'      => 0,

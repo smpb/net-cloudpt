@@ -8,7 +8,6 @@ use JSON;
 use Net::OAuth; $Net::OAuth::PROTOCOL_VERSION = Net::OAuth::PROTOCOL_VERSION_1_0A;
 use LWP::UserAgent;
 use LWP::Protocol::https;
-use HTTP::Request::Common;
 use Data::Random 'rand_chars';
 
 =head1 NAME
@@ -64,9 +63,6 @@ sub new
     $self->{authorize_url}  ||= 'https://cloudpt.pt/oauth/authorize',
     $self->{access_url}     ||= 'https://cloudpt.pt/oauth/access_token',
 
-    $self->{api_endpoint}     ||= 'https://publicapi.cloudpt.pt';
-    $self->{content_endpoint} ||= 'https://api-content.cloudpt.pt';
-
     $self->{debug} ||= $ENV{DEBUG};
 
     return $self;
@@ -95,7 +91,7 @@ sub login
 {
   my $self = shift;
 
-  my $req = Net::OAuth->request('request token')->new(
+  my $request = Net::OAuth->request('request token')->new(
     consumer_key        => $self->{key},
     consumer_secret     => $self->{secret},
     request_url         => $self->{request_url},
@@ -107,13 +103,13 @@ sub login
     callback_confirmed  => 'true',
   );
 
-  $req->sign;
+  $request->sign;
 
-  my $res = $self->{ua}->request(POST $req->to_url);
+  my $response = $self->{ua}->post($request->to_url);
 
-  if ($res->is_success)
+  if ($response->is_success)
   {
-    my $response = Net::OAuth->response('request token')->from_post_body($res->content);
+    my $response = Net::OAuth->response('request token')->from_post_body($response->content);
     $self->{request_token}  = $response->token;
     $self->{request_secret} = $response->token_secret;
 
@@ -131,7 +127,7 @@ sub login
   }
   else
   {
-    carp "ERROR: " . $res->status_line;
+    carp "ERROR: " . $response->status_line;
   }
 
   # nok
@@ -155,7 +151,7 @@ sub authorize
 
   if ( $args{verifier} )
   {
-    my $req = Net::OAuth->request('access token')->new(
+    my $request = Net::OAuth->request('access token')->new(
       consumer_key      => $self->{key},
       consumer_secret   => $self->{secret},
       request_url       => $self->{access_url},
@@ -169,13 +165,13 @@ sub authorize
       verifier          => $args{verifier},
     );
 
-    $req->sign;
+    $request->sign;
 
-    my $res = $self->{ua}->request(POST $req->to_url);
+    my $response = $self->{ua}->post($request->to_url);
 
-    if ($res->is_success)
+    if ($response->is_success)
     {
-      my $response = Net::OAuth->response('access token')->from_post_body($res->content);
+      my $response = Net::OAuth->response('access token')->from_post_body($response->content);
       $self->{access_token}  = $response->token;
       $self->{access_secret} = $response->token_secret;
 
@@ -187,7 +183,7 @@ sub authorize
     }
     else
     {
-      carp "ERROR: " . $res->status_line;
+      carp "ERROR: " . $response->status_line;
     }
   }
   else
