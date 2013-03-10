@@ -124,12 +124,16 @@ sub login
 
     cluck "Authorization URL: '$authorize'" if ( $ENV{DEBUG} );
 
+    # ok
     return $authorize;
   }
   else
   {
     carp "ERROR: " . $res->status_line;
   }
+
+  # nok
+  return 0;
 }
 
 =head2 authorize
@@ -188,6 +192,9 @@ sub authorize
   {
     carp "ERROR: Authorization 'verifier' needed.";
   }
+
+  # nok
+  return 0;
 }
 
 =head1 INTERNAL API
