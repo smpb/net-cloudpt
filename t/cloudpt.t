@@ -4,10 +4,11 @@ use strict;
 use warnings;
 
 use Test::More;
-use IO::Interactive 'is_interactive';
-use Regexp::Common 'URI';
 use File::Spec;
 use File::Basename 'dirname';
+use IO::Interactive 'is_interactive';
+use Regexp::Common 'URI';
+use Data::Dumper;
 
 use lib join '/', File::Spec->splitdir(dirname(__FILE__)), '../lib/';
 
@@ -45,6 +46,10 @@ SKIP:
   like($pin, '/\d{10}/', 'The PIN is a 10-digit number');
 
   ok($cloud->authorize( verifier => $pin ), 'Authorized');
+
+  my $data = $cloud->metadata( path => '/', file_limit => 2 );
+  is(ref $data, 'HASH', 'Got metadata from the root.');
+  print Dumper $data;
 }
 
 done_testing;

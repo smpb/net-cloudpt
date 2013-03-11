@@ -11,6 +11,7 @@ my $build = Module::Build->new(
   dist_abstract => 'Net::CloudPT - A CloudPT interface',
   license       => 'perl',
   requires      => {
+    'URI'                   => 0,
     'Carp'                  => 0,
     'JSON'                  => 0,
     'Net::OAuth'            => 0,

@@ -3,12 +3,13 @@ package Net::CloudPT;
 use strict;
 use warnings;
 
-use Carp qw/carp cluck/;
+use URI;
 use JSON;
 use Net::OAuth; $Net::OAuth::PROTOCOL_VERSION = Net::OAuth::PROTOCOL_VERSION_1_0A;
 use LWP::UserAgent;
 use LWP::Protocol::https;
 use Data::Random 'rand_chars';
+use Carp qw/carp cluck/;
 
 =head1 NAME
 
@@ -63,6 +64,8 @@ sub new
     $self->{authorize_url}  ||= 'https://cloudpt.pt/oauth/authorize',
     $self->{access_url}     ||= 'https://cloudpt.pt/oauth/access_token',
 
+    $self->{target} ||= 'cloudpt'; # or 'sandbox'
+
     $self->{debug} ||= $ENV{DEBUG};
 
     return $self;
@@ -71,6 +74,9 @@ sub new
   {
     carp "ERROR: Please specify the 'key' and 'secret' parameters.";
   }
+
+  # nok
+  return;
 }
 
 =head2 login
@@ -107,8 +113,10 @@ sub login
 
   my $response = $self->{ua}->post($request->to_url);
 
-  if ($response->is_success)
+  if ( $response->is_success )
   {
+    $self->{errstr} = '';
+
     my $response = Net::OAuth->response('request token')->from_post_body($response->content);
     $self->{request_token}  = $response->token;
     $self->{request_secret} = $response->token_secret;
@@ -127,11 +135,12 @@ sub login
   }
   else
   {
-    carp "ERROR: " . $response->status_line;
+    $self->{errstr} = $response->status_line;
+    carp "ERROR: " . $self->{errstr};
   }
 
   # nok
-  return 0;
+  return;
 }
 
 =head2 authorize
@@ -169,8 +178,10 @@ sub authorize
 
     my $response = $self->{ua}->post($request->to_url);
 
-    if ($response->is_success)
+    if ( $response->is_success )
     {
+      $self->{errstr} = '';
+
       my $response = Net::OAuth->response('access token')->from_post_body($response->content);
       $self->{access_token}  = $response->token;
       $self->{access_secret} = $response->token_secret;
@@ -183,17 +194,66 @@ sub authorize
     }
     else
     {
-      carp "ERROR: " . $response->status_line;
+      $self->{errstr} = $response->status_line;
+      carp "ERROR: " . $self->{errstr};
     }
   }
   else
   {
-    carp "ERROR: Authorization 'verifier' needed.";
+    $self->{errstr} = "Authorization 'verifier' needed.";
+    carp "ERROR: " . $self->{errstr};
   }
 
   # nok
-  return 0;
+  return;
 }
+
+=head2 metadata
+
+Returns all the metadata available for a given file or folder (specified through its C<path>).
+
+    $metadata = $cloud->metadata( path => '/Photos' );
+
+=cut
+
+sub metadata
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $path = '';
+  if ( defined $args{path} )
+  {
+    $path = $args{path};
+    $path =~ s/^\///g; # remove the leading slash
+    delete $args{path};
+  }
+  my $endpoint  = 'publicapi';
+  my $options   = { %args };
+
+  my $response = $self->_execute(
+    command   => 'Metadata',
+    endpoint  => $endpoint,
+    path      => $path,
+    target    => $self->{target},
+    options   => $options,
+  );
+
+  my $data;
+  eval { $data = from_json $response };
+
+  if ($@) { return }
+  else    { return $data }
+}
+
+=head2 error
+
+Return the most recent error message. If the last API request was completed
+successfully, this method will return an empty string.
+
+=cut
+
+sub error { shift->{errstr} }
 
 =head1 INTERNAL API
 
@@ -204,6 +264,80 @@ Generate a unique 'nonce' to be used on each request.
 =cut
 
 sub _nonce { join( '', rand_chars( size => 16, set => 'alphanumeric' )); }
+
+=head2 _execute
+
+Execute a particular API request to the service's protected resources.
+
+=cut
+
+sub _execute
+{
+  my $self = shift;
+  my %args = @_;
+
+  $args{method}   ||= 'GET';
+  $args{endpoint} ||= 'publicapi'; # 'api-content'
+
+  # build the request URI
+  my @uri_bits = ( 'https://' . $args{endpoint} . '.cloudpt.pt/1' );
+  push @uri_bits, $args{command};
+  push @uri_bits, $args{target} if ( defined $args{target} );
+  push @uri_bits, $args{path}   if ( defined $args{path} );
+
+  my $uri = URI->new( join '/', @uri_bits );
+  $uri->query_form($args{options}) if scalar keys %{$args{options}};
+
+  my $request = Net::OAuth->request("protected resource")->new(
+    consumer_key      => $self->{key},
+    consumer_secret   => $self->{secret},
+    request_url       => $uri->as_string,
+    request_method    => $args{method},
+    signature_method  => 'HMAC-SHA1',
+    timestamp         => time,
+    nonce             => $self->_nonce,
+    token             => $self->{access_token},
+    token_secret      => $self->{access_secret},
+  );
+
+  $request->sign;
+
+  cluck "Executing '" . $args{method} . "' request to: '" . $uri->as_string . "'" if ( $self->{debug} );
+
+  my $response;
+  if ( $args{method} =~ /GET/i )
+  {
+    $response = $self->{ua}->get($request->to_url);
+  }
+  else
+  {
+    $response = $self->{ua}->post($request->to_url, Content_Type => 'form-data', Content => $args{content});
+  }
+
+  if ( $response->is_success )
+  {
+    $self->{errstr} = '';
+
+    my $data;
+    eval { $data = from_json($response->content) };
+
+    if ($@) # it's not JSON; could be file content
+    {
+      return $response->content;
+    }
+
+    $data->{http_response_code} = $response->code();
+    return to_json($data);
+  }
+  else
+  {
+    $self->{errstr} = $response->status_line;
+    carp "ERROR: " . $self->{errstr};
+  }
+
+  # nok
+  return;
+}
 
 =head1 AUTHOR
 
