@@ -331,12 +331,8 @@ sub _execute
   }
   else
   {
-    $self->{errstr} = $response->status_line;
-    carp "ERROR: " . $self->{errstr};
+    return to_json { http_response_code => $response->code };
   }
-
-  # nok
-  return;
 }
 
 =head1 AUTHOR
