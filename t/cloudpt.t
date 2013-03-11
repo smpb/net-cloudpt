@@ -19,14 +19,32 @@ BEGIN
 
 SKIP:
 {
-  skip 'Not running on an interactive shell.', 1 unless is_interactive;
+  my $key;
+  my $secret;
 
-  print 'What is your consumer key? ';
-  my $key = <>; chomp $key;
+  my $auth_file = join '/', File::Spec->splitdir(dirname(__FILE__)), '../etc/auth.cfg';
+
+  if ( -f $auth_file )
+  {
+    open my $fh, '<', $auth_file;
+    my $auth = eval do { local $/; <$fh> };
+    close $fh;
+
+    $key    = $auth->{key};
+    $secret = $auth->{secret};
+  }
+
+  unless ( defined $key and defined $secret )
+  {
+    skip 'Not running on an interactive shell.', 1 unless is_interactive;
+
+    print 'What is your consumer key? ';
+    $key = <>; chomp $key;
+    print 'What is your consumer secret? ';
+    $secret = <>; chomp $secret;
+  }
+
   like($key, '/[-\w\d]+/', 'The key appears to be valid.');
-
-  print 'What is your consumer secret? ';
-  my $secret = <>; chomp $secret;
   like($secret, '/\d+/', 'The secret appears to be valid.');
 
   my $cloud = Net::CloudPT->new(

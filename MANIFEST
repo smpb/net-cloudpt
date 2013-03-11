@@ -1,4 +1,5 @@
 Build.PL
+etc/auth.cfg
 lib/Net/CloudPT.pm
 MANIFEST			This list of files
 README.md
