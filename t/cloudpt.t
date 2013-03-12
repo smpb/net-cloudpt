@@ -54,19 +54,29 @@ SKIP:
   is(ref $cloud, 'Net::CloudPT', 'got a CloudPT interface');
 
   my $url = $cloud->login;
-
   like($url, "/$RE{URI}{HTTP}{ -scheme => qr{https?} }/", 'The login process returned an auth URL.');
 
   print "Authorize this test suite here: '$url'\n";
   print 'What is the verifier PIN? ';
   my $pin = <>; chomp $pin;
-
   like($pin, '/\d{10}/', 'The PIN is a 10-digit number');
-
   ok($cloud->authorize( verifier => $pin ), 'Authorized');
 
-  my $data = $cloud->metadata( path => '/', file_limit => 2 );
+  my $data;
+
+  $data = $cloud->metadata( path => '/', file_limit => 2 );
   is(ref $data, 'HASH', 'Got metadata from the root.');
+  print Dumper $data;
+
+  $data = $cloud->list_links;
+  is(ref $data, 'ARRAY', 'Got a list of public links.');
+  print Dumper $data;
+
+  my $item = pop @$data;
+  my @path = split '/', $item->{path};
+  my $name = pop @path;
+  $data = $cloud->metadata_share( id => $item->{shareid}, name => $name );
+  is(ref $data, 'HASH', 'Got metadata from a shared item.');
   print Dumper $data;
 }
 

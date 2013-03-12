@@ -239,11 +239,53 @@ sub metadata
     options   => $options,
   );
 
-  my $data;
-  eval { $data = from_json $response };
+  return from_json $response;
+}
 
-  if ($@) { return }
-  else    { return $data }
+=head2 metadata_share
+
+Returns the metadata of a shared resource. Its share C<id> and C<name> are required.
+
+    $data = $cloud->metada_share( share_id => 'a1bc7534-3786-40f1-b435-6fv90a00b2a6', name => 'Photo.jpg' );
+
+=cut
+
+sub metadata_share
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $endpoint  = 'publicapi';
+
+  my $response = $self->_execute(
+    command   => 'MetadataShare',
+    endpoint  => $endpoint,
+    target    => $args{id},
+    path      => $args{name},
+  );
+
+  return from_json $response;
+}
+
+=head2 list_links
+
+Returns a list of all the public links created by the user.
+
+    $data = $cloud->list_links;
+
+=cut
+
+sub list_links
+{
+  my $self = shift;
+  my $endpoint  = 'publicapi';
+
+  my $response = $self->_execute(
+    command   => 'ListLinks',
+    endpoint  => $endpoint,
+  );
+
+  return from_json $response;
 }
 
 =head2 error
@@ -326,7 +368,7 @@ sub _execute
       return $response->content;
     }
 
-    $data->{http_response_code} = $response->code();
+    $data->{http_response_code} = $response->code() if ( ref $data eq 'HASH' );
     return to_json($data);
   }
   else
