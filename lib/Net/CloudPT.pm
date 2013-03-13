@@ -389,6 +389,39 @@ sub list_shared_folders
   return from_json $response;
 }
 
+=head2 list
+
+Returns metadata for a given file or folder (specified through its C<path>). Similar to the actual C<metadata> method, but with less items and more options.
+
+    $metadata = $cloud->list( path => '/Photos' );
+
+=cut
+
+sub list
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $path = '';
+  if ( defined $args{path} )
+  {
+    $path = $args{path};
+    delete $args{path};
+  }
+  my $endpoint  = 'publicapi';
+  my $options   = { %args };
+
+  my $response = $self->_execute(
+    command   => 'List',
+    endpoint  => $endpoint,
+    path      => $path,
+    target    => $self->{target},
+    options   => $options,
+  );
+
+  return from_json $response;
+}
+
 =head2 error
 
 Return the most recent error message. If the last API request was completed

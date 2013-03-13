@@ -91,6 +91,10 @@ SKIP:
   $data = $cloud->list_shared_folders;
   is(ref $data, 'HASH', 'Got a list of shared folders information.');
   print Dumper $data;
+
+  $data = $cloud->list( path => '/', file_limit => 2 );
+  is(ref $data, 'HASH', 'Got a list of metadata from the root.');
+  print Dumper $data;
 }
 
 done_testing;
