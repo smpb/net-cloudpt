@@ -81,7 +81,15 @@ SKIP:
   print Dumper $data;
 
   $data = $cloud->delete_link( id => $item->{shareid} );
-  is(ref $data, 'HASH', 'Got metadata from a shared item.');
+  is($data->{http_response_code}, 200, 'An item is no longer publicly shared.');
+  print Dumper $data;
+
+  $data = $cloud->shares( path => $item->{path} );
+  is(ref $data, 'HASH', 'An item is now publicly shared.');
+  print Dumper $data;
+
+  $data = $cloud->list_shared_folders;
+  is(ref $data, 'HASH', 'Got a list of shared folders information.');
   print Dumper $data;
 }
 

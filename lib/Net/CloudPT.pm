@@ -225,7 +225,6 @@ sub metadata
   if ( defined $args{path} )
   {
     $path = $args{path};
-    $path =~ s/^\///g; # remove the leading slash
     delete $args{path};
   }
   my $endpoint  = 'publicapi';
@@ -290,7 +289,7 @@ sub list_links
 
 =head2 delete_link
 
-Delete a public link of a file or folder.
+Delete a public link of a file or folder. Its share C<id> is required.
 
     $response = $cloud->delete_link( id => 'a1bc7534-3786-40f1-b435-6fv90a00b2a6' );
 
@@ -309,6 +308,82 @@ sub delete_link
     endpoint  => $endpoint,
     method    => $method,
     content   => { shareid => $args{id} },
+  );
+
+  return from_json $response;
+}
+
+=head2 shares
+
+Create a public link of a file or folder. Its C<path> is required.
+
+    $response = $cloud->shares( path => '/Photos/logo.png' );
+
+=cut
+
+sub shares
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $endpoint  = 'publicapi';
+  my $method    = 'POST';
+
+  my $response = $self->_execute(
+    command   => 'Shares',
+    endpoint  => $endpoint,
+    method    => $method,
+    target    => $self->{target},
+    path      => $args{path},
+  );
+
+  return from_json $response;
+}
+
+=head2 share_folder
+
+Share a folder with another user. The folder's C<path>, and a target C<email> are required.
+
+    $response = $cloud->share_folder( path => '/Photos', email => 'friend@home.com' );
+
+=cut
+
+sub share_folder
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $endpoint  = 'publicapi';
+  my $method    = 'POST';
+
+  my $response = $self->_execute(
+    command   => 'ShareFolder',
+    endpoint  => $endpoint,
+    method    => $method,
+    target    => $self->{target},
+    path      => $args{path},
+    content   => { to_email => $args{email} },
+  );
+
+  return from_json $response;
+}
+
+=head2 list_shared_folders
+
+Returns a list of all the shared folders accessed by the user.
+
+    $data = $cloud->list_shared_folders;
+
+=cut
+
+sub list_shared_folders
+{
+  my $self = shift;
+  my $endpoint = 'publicapi';
+
+  my $response = $self->_execute(
+    command   => 'ListSharedFolders',
+    endpoint  => $endpoint,
   );
 
   return from_json $response;
@@ -351,7 +426,11 @@ sub _execute
   my @uri_bits = ( 'https://' . $args{endpoint} . '.cloudpt.pt/1' );
   push @uri_bits, $args{command};
   push @uri_bits, $args{target} if ( defined $args{target} );
-  push @uri_bits, $args{path}   if ( defined $args{path} );
+  if ( defined $args{path} )
+  {
+    $args{path} =~ s/^\///g; # remove the leading slash
+    push @uri_bits, $args{path}
+  }
 
   my $uri = URI->new( join '/', @uri_bits );
   $uri->query_form($args{options}) if scalar keys %{$args{options}};
@@ -379,7 +458,14 @@ sub _execute
   }
   else
   {
-    $response = $self->{ua}->post($request->to_url, Content_Type => 'form-data', Content => $args{content});
+    if ( defined $args{content} )
+    {
+      $response = $self->{ua}->post($request->to_url, Content_Type => 'form-data', Content => $args{content});
+    }
+    else
+    {
+      $response = $self->{ua}->post($request->to_url);
+    }
   }
 
   if ( $response->is_success and $response->content ne '' )
