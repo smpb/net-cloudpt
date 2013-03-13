@@ -75,7 +75,12 @@ SKIP:
   my $item = pop @$data;
   my @path = split '/', $item->{path};
   my $name = pop @path;
+
   $data = $cloud->metadata_share( id => $item->{shareid}, name => $name );
+  is(ref $data, 'HASH', 'Got metadata from a shared item.');
+  print Dumper $data;
+
+  $data = $cloud->delete_link( id => $item->{shareid} );
   is(ref $data, 'HASH', 'Got metadata from a shared item.');
   print Dumper $data;
 }

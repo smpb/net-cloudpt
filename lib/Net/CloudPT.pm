@@ -278,11 +278,37 @@ Returns a list of all the public links created by the user.
 sub list_links
 {
   my $self = shift;
-  my $endpoint  = 'publicapi';
+  my $endpoint = 'publicapi';
 
   my $response = $self->_execute(
     command   => 'ListLinks',
     endpoint  => $endpoint,
+  );
+
+  return from_json $response;
+}
+
+=head2 delete_link
+
+Delete a public link of a file or folder.
+
+    $response = $cloud->delete_link( id => 'a1bc7534-3786-40f1-b435-6fv90a00b2a6' );
+
+=cut
+
+sub delete_link
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $endpoint  = 'publicapi';
+  my $method    = 'POST';
+
+  my $response = $self->_execute(
+    command   => 'DeleteLink',
+    endpoint  => $endpoint,
+    method    => $method,
+    content   => { shareid => $args{id} },
   );
 
   return from_json $response;
@@ -356,9 +382,11 @@ sub _execute
     $response = $self->{ua}->post($request->to_url, Content_Type => 'form-data', Content => $args{content});
   }
 
-  if ( $response->is_success )
+  if ( $response->is_success and $response->content ne '' )
   {
     $self->{errstr} = '';
+
+    cluck "Response content: '" . $response->content . "'" if ( $self->{debug} );
 
     my $data;
     eval { $data = from_json($response->content) };
