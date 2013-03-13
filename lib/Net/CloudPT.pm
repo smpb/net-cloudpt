@@ -221,12 +221,9 @@ sub metadata
   my $self = shift;
   my %args = @_;
 
-  my $path = '';
-  if ( defined $args{path} )
-  {
-    $path = $args{path};
-    delete $args{path};
-  }
+  my $path = $args{path};
+  delete $args{path};
+
   my $endpoint  = 'publicapi';
   my $options   = { %args };
 
@@ -245,7 +242,7 @@ sub metadata
 
 Returns the metadata of a shared resource. Its share C<id> and C<name> are required.
 
-    $data = $cloud->metada_share( share_id => 'a1bc7534-3786-40f1-b435-6fv90a00b2a6', name => 'Photo.jpg' );
+    $data = $cloud->metada_share( share_id => 'a1bc7534-3786-40f1-b435-6fv90a00b2a6', name => 'logo.png' );
 
 =cut
 
@@ -407,12 +404,9 @@ sub list
   my $self = shift;
   my %args = @_;
 
-  my $path = '';
-  if ( defined $args{path} )
-  {
-    $path = $args{path};
-    delete $args{path};
-  }
+  my $path = $args{path} || '';
+  delete $args{path};
+
   my $endpoint  = 'publicapi';
   my $options   = { %args };
 
@@ -425,6 +419,36 @@ sub list
   );
 
   return from_json $response;
+}
+
+=head2 thumbnails
+
+Return the thumbnail (in binary format) of the file specified in the C<path>.
+
+    $content = $cloud->thumbnails( path => '/Photos/logo.png' );
+
+=cut
+
+sub thumbnails
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $path = $args{path} || '';
+  delete $args{path};
+
+  my $endpoint  = 'api-content';
+  my $options   = { %args };
+
+  my $response = $self->_execute(
+    command   => 'Thumbnails',
+    endpoint  => $endpoint,
+    path      => $path,
+    target    => $self->{target},
+    options   => $options,
+  );
+
+  return $response;
 }
 
 =head2 error
