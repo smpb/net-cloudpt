@@ -255,12 +255,17 @@ sub metadata_share
   my %args = @_;
 
   my $endpoint  = 'publicapi';
+  my $options   = { %args };
+
+  delete $options->{id};
+  delete $options->{name};
 
   my $response = $self->_execute(
     command   => 'MetadataShare',
     endpoint  => $endpoint,
     target    => $args{id},
     path      => $args{name},
+    options   => $options,
   );
 
   return from_json $response;
