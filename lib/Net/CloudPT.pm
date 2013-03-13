@@ -481,6 +481,36 @@ sub search
   return from_json $response;
 }
 
+=head2 revisions
+
+Obtain information of the most recent version on the file in the C<path>.
+
+    $content = $cloud->search( path => '/Photos/logo.png' );
+
+=cut
+
+sub revisions
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $path = $args{path} || '';
+  delete $args{path};
+
+  my $endpoint  = 'publicapi';
+  my $options   = { %args };
+
+  my $response = $self->_execute(
+    command   => 'Revisions',
+    endpoint  => $endpoint,
+    path      => $path,
+    target    => $self->{target},
+    options   => $options,
+  );
+
+  return from_json $response;
+}
+
 =head2 error
 
 Return the most recent error message. If the last API request was completed
