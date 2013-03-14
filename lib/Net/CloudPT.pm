@@ -64,7 +64,7 @@ sub new
     $self->{authorize_url}  ||= 'https://cloudpt.pt/oauth/authorize',
     $self->{access_url}     ||= 'https://cloudpt.pt/oauth/access_token',
 
-    $self->{target} ||= 'cloudpt'; # or 'sandbox'
+    $self->{root} ||= 'cloudpt'; # or 'sandbox'
 
     $self->{debug} ||= $ENV{DEBUG};
 
@@ -231,7 +231,7 @@ sub metadata
     command   => 'Metadata',
     endpoint  => $endpoint,
     path      => $path,
-    target    => $self->{target},
+    root      => $self->{root},
     options   => $options,
   );
 
@@ -260,7 +260,7 @@ sub metadata_share
   my $response = $self->_execute(
     command   => 'MetadataShare',
     endpoint  => $endpoint,
-    target    => $args{id},
+    root      => $args{id},
     path      => $args{name},
     options   => $options,
   );
@@ -335,7 +335,7 @@ sub shares
     command   => 'Shares',
     endpoint  => $endpoint,
     method    => $method,
-    target    => $self->{target},
+    root      => $self->{root},
     path      => $args{path},
   );
 
@@ -362,7 +362,7 @@ sub share_folder
     command   => 'ShareFolder',
     endpoint  => $endpoint,
     method    => $method,
-    target    => $self->{target},
+    root      => $self->{root},
     path      => $args{path},
     content   => { to_email => $args{email} },
   );
@@ -414,7 +414,7 @@ sub list
     command   => 'List',
     endpoint  => $endpoint,
     path      => $path,
-    target    => $self->{target},
+    root      => $self->{root},
     options   => $options,
   );
 
@@ -444,7 +444,7 @@ sub thumbnails
     command   => 'Thumbnails',
     endpoint  => $endpoint,
     path      => $path,
-    target    => $self->{target},
+    root      => $self->{root},
     options   => $options,
   );
 
@@ -474,7 +474,7 @@ sub search
     command   => 'Search',
     endpoint  => $endpoint,
     path      => $path,
-    target    => $self->{target},
+    root      => $self->{root},
     options   => $options,
   );
 
@@ -504,7 +504,7 @@ sub revisions
     command   => 'Revisions',
     endpoint  => $endpoint,
     path      => $path,
-    target    => $self->{target},
+    root      => $self->{root},
     options   => $options,
   );
 
@@ -534,7 +534,7 @@ sub restore
     endpoint  => $endpoint,
     method    => $method,
     path      => $path,
-    target    => $self->{target},
+    root      => $self->{root},
     content   => { rev => $args{revision} },
   );
 
@@ -564,7 +564,7 @@ sub media
     endpoint  => $endpoint,
     method    => $method,
     path      => $path,
-    target    => $self->{target},
+    root      => $self->{root},
     content   => $options,
   );
 
@@ -607,7 +607,7 @@ sub _execute
   # build the request URI
   my @uri_bits = ( 'https://' . $args{endpoint} . '.cloudpt.pt/1' );
   push @uri_bits, $args{command};
-  push @uri_bits, $args{target} if ( defined $args{target} );
+  push @uri_bits, $args{root} if ( defined $args{root} );
   if ( defined $args{path} )
   {
     $args{path} =~ s/^\///g; # remove the leading slash
