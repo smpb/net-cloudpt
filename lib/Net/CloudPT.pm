@@ -526,7 +526,6 @@ sub restore
 
   my $method = 'POST';
   my $path = $args{path} || '';
-  delete $args{path};
 
   my $endpoint  = 'publicapi';
 
@@ -537,6 +536,36 @@ sub restore
     path      => $path,
     target    => $self->{target},
     content   => { rev => $args{revision} },
+  );
+
+  return from_json $response;
+}
+
+=head2 media
+
+Return a direct link for the file in the C<path>. If it's a video/audio file, a streaming link is returned per the C<protocol> parameter.
+
+=cut
+
+sub media
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $method = 'POST';
+  my $path = $args{path} || '';
+  delete $args{path};
+
+  my $endpoint  = 'publicapi';
+  my $options   = { %args };
+
+  my $response = $self->_execute(
+    command   => 'Media',
+    endpoint  => $endpoint,
+    method    => $method,
+    path      => $path,
+    target    => $self->{target},
+    content   => $options,
   );
 
   return from_json $response;
