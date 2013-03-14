@@ -511,6 +511,37 @@ sub revisions
   return from_json $response;
 }
 
+=head2 restore
+
+Restore a specific C<revision> of the file in the C<path>.
+
+    $response = $cloud->restore( path => '/Photos/logo.png', revision => '384186e2-31e9-11e2-927c-e0db5501ca40' );
+
+=cut
+
+sub restore
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $method = 'POST';
+  my $path = $args{path} || '';
+  delete $args{path};
+
+  my $endpoint  = 'publicapi';
+
+  my $response = $self->_execute(
+    command   => 'Restore',
+    endpoint  => $endpoint,
+    method    => $method,
+    path      => $path,
+    target    => $self->{target},
+    content   => { rev => $args{revision} },
+  );
+
+  return from_json $response;
+}
+
 =head2 error
 
 Return the most recent error message. If the last API request was completed
