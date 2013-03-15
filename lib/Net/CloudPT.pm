@@ -208,6 +208,29 @@ sub authorize
   return;
 }
 
+=head2 account_info
+
+Shows information about the user.
+
+    $data = $cloud->account_info;
+
+=cut
+
+sub account_info
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $endpoint  = 'publicapi';
+
+  my $response = $self->_execute(
+    command   => 'Account/Info',
+    endpoint  => $endpoint,
+  );
+
+  return from_json $response;
+}
+
 =head2 metadata
 
 Returns all the metadata available for a given file or folder (specified through its C<path>).
