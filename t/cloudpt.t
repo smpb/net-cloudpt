@@ -64,6 +64,10 @@ SKIP:
 
   my $data;
 
+  $data = $cloud->account_info;
+  is(ref $data, 'HASH', 'Got my account info!');
+  print Dumper $data;
+
   $data = $cloud->metadata( path => '/', file_limit => 2 );
   is(ref $data, 'HASH', 'Got metadata from the root.');
   print Dumper $data;
@@ -94,6 +98,10 @@ SKIP:
 
   $data = $cloud->list( path => '/', file_limit => 2 );
   is(ref $data, 'HASH', 'Got a list of metadata from the root.');
+  print Dumper $data;
+
+  $data = $cloud->delta;
+  is(ref $data, 'HASH', 'Got delta info.');
   print Dumper $data;
 }
 

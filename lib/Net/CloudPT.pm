@@ -568,6 +568,8 @@ sub restore
 
 Return a direct link for the file in the C<path>. If it's a video/audio file, a streaming link is returned per the C<protocol> parameter.
 
+    $response = $cloud->media( path => '/Music/song.mp3', protocol => 'rtsp' );
+
 =cut
 
 sub media
@@ -588,6 +590,33 @@ sub media
     method    => $method,
     path      => $path,
     root      => $self->{root},
+    content   => $options,
+  );
+
+  return from_json $response;
+}
+
+=head2 delta
+
+List the current changes available for syncing.
+
+    $data = $cloud->delta;
+
+=cut
+
+sub delta
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $method    = 'POST';
+  my $endpoint  = 'publicapi';
+  my $options   = { %args };
+
+  my $response = $self->_execute(
+    command   => 'Delta',
+    endpoint  => $endpoint,
+    method    => $method,
     content   => $options,
   );
 
