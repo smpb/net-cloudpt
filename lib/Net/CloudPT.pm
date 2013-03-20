@@ -8,6 +8,7 @@ use JSON;
 use Net::OAuth; $Net::OAuth::PROTOCOL_VERSION = Net::OAuth::PROTOCOL_VERSION_1_0A;
 use LWP::UserAgent;
 use LWP::Protocol::https;
+use File::Basename 'basename';
 use Data::Random 'rand_chars';
 use Carp qw/carp cluck/;
 
@@ -136,7 +137,7 @@ sub login
   else
   {
     $self->{errstr} = $response->status_line;
-    carp "ERROR: " . $self->{errstr};
+    carp 'ERROR: ' . $self->{errstr};
   }
 
   # nok
@@ -195,13 +196,13 @@ sub authorize
     else
     {
       $self->{errstr} = $response->status_line;
-      carp "ERROR: " . $self->{errstr};
+      carp 'ERROR: ' . $self->{errstr};
     }
   }
   else
   {
     $self->{errstr} = "Authorization 'verifier' needed.";
-    carp "ERROR: " . $self->{errstr};
+    carp 'ERROR: ' . $self->{errstr};
   }
 
   # nok
@@ -233,7 +234,8 @@ sub account_info
 
 =head2 metadata
 
-Returns all the metadata available for a given file or folder (specified through its C<path>).
+Returns all the metadata available for a given file or folder (specified
+through its C<path>).
 
     $metadata = $cloud->metadata( path => '/Photos' );
 
@@ -263,9 +265,12 @@ sub metadata
 
 =head2 metadata_share
 
-Returns the metadata of a shared resource. Its share C<id> and C<name> are required.
+Returns the metadata of a shared resource. Its share C<id> and C<name> are
+required.
 
-    $data = $cloud->metada_share( share_id => 'a1bc7534-3786-40f1-b435-6fv90a00b2a6', name => 'logo.png' );
+    $data = $cloud->metada_share(
+      share_id => 'a1bc7534-3786-40f1-b435-6fv90a00b2a6', name => 'logo.png'
+    );
 
 =cut
 
@@ -367,9 +372,12 @@ sub shares
 
 =head2 share_folder
 
-Share a folder with another user. The folder's C<path>, and a target C<email> are required.
+Share a folder with another user. The folder's C<path>, and a target C<email>
+are required.
 
-    $response = $cloud->share_folder( path => '/Photos', email => 'friend@home.com' );
+    $response = $cloud->share_folder(
+      path => '/Photos', email => 'friend@home.com'
+    );
 
 =cut
 
@@ -416,7 +424,8 @@ sub list_shared_folders
 
 =head2 list
 
-Returns metadata for a given file or folder (specified through its C<path>). Similar to the actual C<metadata> method, but with less items and more options.
+Returns metadata for a given file or folder (specified through its C<path>).
+Similar to the actual C<metadata> method, but with less items and more options.
 
     $metadata = $cloud->list( path => '/Photos' );
 
@@ -538,7 +547,10 @@ sub revisions
 
 Restore a specific C<revision> of the file in the C<path>.
 
-    $response = $cloud->restore( path => '/Photos/logo.png', revision => '384186e2-31e9-11e2-927c-e0db5501ca40' );
+    $response = $cloud->restore(
+      path     => '/Photos/logo.png',
+      revision => '384186e2-31e9-11e2-927c-e0db5501ca40'
+    );
 
 =cut
 
@@ -566,7 +578,8 @@ sub restore
 
 =head2 media
 
-Return a direct link for the file in the C<path>. If it's a video/audio file, a streaming link is returned per the C<protocol> parameter.
+Return a direct link for the file in the C<path>. If it's a video/audio file, a
+streaming link is returned per the C<protocol> parameter.
 
     $response = $cloud->media( path => '/Music/song.mp3', protocol => 'rtsp' );
 
@@ -623,6 +636,88 @@ sub delta
   return from_json $response;
 }
 
+=head2 put_file
+
+Upload a file to CloudPT.
+You can choose to C<overwrite> it (this being either C<true> or C<false>), if
+it already exists, as well as choose to overwrite a C<parent_rev> of the file.
+
+    $response = $cloud->put_file( file => 'logo2.png', path => '/Photos' );
+
+=cut
+
+sub put_file
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $method    = 'POST';
+  my $endpoint  = 'api-content';
+
+  my $path  = join '/', ( ($args{path} || ''),  basename $args{file} );
+
+  my $content = $args{content};
+  unless ( defined $content )
+  {
+    if ( open my $fh, '<', $args{file} )
+    {
+      $content = do { local $/; <$fh> };
+      close $fh;
+    }
+    else
+    {
+      $self->{errstr} = "Unable to open file '" . $args{file} . "'";
+      carp 'ERROR: ' . $self->{errstr};
+      return;
+    }
+  }
+
+  delete $args{path};
+  delete $args{file};
+  delete $args{content};
+
+  my $response = $self->_execute(
+    command   => 'Files',
+    endpoint  => $endpoint,
+    method    => $method,
+    path      => $path,
+    root      => $self->{root},
+    content   => $content,
+    options   => { %args },
+  );
+
+  return from_json $response;
+}
+
+=head2 get_file
+
+Download a file from CloudPT. A specific C<rev> can be requested.
+
+    $data = $cloud->get_file( path => '/Photos/logo2.png' );
+
+=cut
+
+sub get_file
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $endpoint  = 'api-content';
+  my $path      = $args{path} || '';
+
+  delete $args{path};
+
+  my $response = $self->_execute(
+    command   => 'Files',
+    endpoint  => $endpoint,
+    path      => $path,
+    root      => $self->{root},
+    options   => { %args },
+  );
+
+  return $response;
+}
+
 =head2 error
 
 Return the most recent error message. If the last API request was completed
@@ -662,7 +757,8 @@ sub _execute
   push @uri_bits, $args{root} if ( defined $args{root} );
   if ( defined $args{path} )
   {
-    $args{path} =~ s/^\///g; # remove the leading slash
+    $args{path} =~ s/^\/+//g; # remove the leading slash
+    $args{path} =~ s/\/{2,}/\//g; # remove possible duplicate slashes
     push @uri_bits, $args{path}
   }
 
