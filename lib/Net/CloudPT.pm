@@ -718,6 +718,184 @@ sub get_file
   return $response;
 }
 
+=head2 copy
+
+From a file in C<from_path>, create a copy in C<to_path>.
+Alternatively, instead of C<from_path>, a copy from a file reference can be
+done with C<from_copy_ref>. The reference is generated from a previous call to
+C<copy_ref>.
+
+    $response = $cloud->copy(
+      from_path => '/Photos/logo2.png', to_path => '/Music/cover.png'
+    );
+
+=cut
+
+sub copy
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $method    = 'POST';
+  my $endpoint  = 'publicapi';
+
+  $args{root} = $self->{root};
+
+  my $response = $self->_execute(
+    command   => 'Fileops/Copy',
+    method    => $method,
+    endpoint  => $endpoint,
+    content   => { %args },
+  );
+
+  return from_json $response;
+}
+
+=head2 copy_ref
+
+Creates, and returns, a copy reference to the file in C<path>.
+This can be used to copy that file to another user's CloudPT.
+
+    $response = $cloud->copy_ref( path => '/Music/cover.png' );
+
+=cut
+
+sub copy_ref
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $endpoint  = 'publicapi';
+  my $path      = $args{path} || '';
+
+  delete $args{path};
+
+  my $response = $self->_execute(
+    command   => 'CopyRef',
+    endpoint  => $endpoint,
+    path      => $path,
+    root      => $self->{root},
+  );
+
+  return from_json $response;
+}
+
+=head2 move
+
+Take a file in C<from_path>, and move it into C<to_path>.
+
+    $response = $cloud->move(
+      from_path => '/Photos/logo2.png', to_path => '/Music/cover.png'
+    );
+
+=cut
+
+sub move
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $method    = 'POST';
+  my $endpoint  = 'publicapi';
+
+  $args{root} = $self->{root};
+
+  my $response = $self->_execute(
+    command   => 'Fileops/Move',
+    method    => $method,
+    endpoint  => $endpoint,
+    content   => { %args },
+  );
+
+  return from_json $response;
+}
+
+=head2 create_folder
+
+Create a folder in C<path>.
+
+    $response = $cloud->create_folder( path => '/Music/Rock' );
+
+=cut
+
+sub create_folder
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $method    = 'POST';
+  my $endpoint  = 'publicapi';
+
+  $args{root} = $self->{root};
+
+  my $response = $self->_execute(
+    command   => 'Fileops/CreateFolder',
+    method    => $method,
+    endpoint  => $endpoint,
+    content   => { %args },
+  );
+
+  return from_json $response;
+}
+
+=head2 delete
+
+Delete a file in C<path>.
+
+    $response = $cloud->delete( path => '/Music/cover.png' );
+
+=cut
+
+sub delete
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $method    = 'POST';
+  my $endpoint  = 'publicapi';
+
+  $args{root} = $self->{root};
+
+  my $response = $self->_execute(
+    command   => 'Fileops/Delete',
+    method    => $method,
+    endpoint  => $endpoint,
+    content   => { %args },
+  );
+
+  return from_json $response;
+}
+
+=head2 undelete
+
+Undelete a file, or folder, previously removed.
+
+    $response = $cloud->undelete( path => '/Music/cover.png' );
+
+=cut
+
+sub undelete
+{
+  my $self = shift;
+  my %args = @_;
+
+  my $method    = 'POST';
+  my $endpoint  = 'publicapi';
+  my $path      = $args{path} || '';
+
+  delete $args{path};
+
+  my $response = $self->_execute(
+    command   => 'UndeleteTree',
+    method    => $method,
+    endpoint  => $endpoint,
+    path      => $path,
+    root      => $self->{root},
+  );
+
+  return from_json $response;
+}
+
 =head2 error
 
 Return the most recent error message. If the last API request was completed
