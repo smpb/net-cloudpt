@@ -9,7 +9,6 @@ use Net::OAuth; $Net::OAuth::PROTOCOL_VERSION = Net::OAuth::PROTOCOL_VERSION_1_0
 use LWP::UserAgent;
 use LWP::Protocol::https;
 use File::Basename 'basename';
-use Data::Random 'rand_chars';
 use Carp qw/carp cluck/;
 
 =head1 NAME
@@ -913,7 +912,7 @@ Generate a unique 'nonce' to be used on each request.
 
 =cut
 
-sub _nonce { join( '', rand_chars( size => 16, set => 'alphanumeric' )); }
+sub _nonce { int( rand 2 ** 32 ) x 2 }
 
 =head2 _execute
 

@@ -15,7 +15,6 @@ my $build = Module::Build->new(
     'Carp'                  => 0,
     'JSON'                  => 0,
     'Net::OAuth'            => 0,
-    'Data::Random'          => 0,
     'LWP::UserAgent'        => 0,
     'LWP::Protocol::https'  => 0,
   },
