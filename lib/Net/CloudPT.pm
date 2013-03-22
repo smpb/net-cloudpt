@@ -35,15 +35,18 @@ Quick start:
     my $cloud = Net::CloudPT->new( key => 'KEY', secret => 'SECRET' );
     $cloud->login;
 
-    # authorize the app, retrieving the verifier PIN...
+    # the user manually authorizes the app, retrieving the verifier PIN...
 
     $cloud->authorize( verifier => $pin );
+
+    my $response = $cloud->share( path => '/Photos/logo.png' );
+    my $data = $cloud->get_file( path => '/Photos/logo.png' );
 
 The particular details regarding the API can be found at L<https://cloudpt.pt/documentation>
 
 =head1 API
 
-=head2 new
+=head2 C<new>
 
 Create a new C<Net::CloudPT> object. The C<key> and C<secret> parameters are required.
 
@@ -79,7 +82,7 @@ sub new
   return;
 }
 
-=head2 login
+=head2 C<login>
 
 Perform the initial login operation, identifying the client on the service.
 
@@ -143,7 +146,7 @@ sub login
   return;
 }
 
-=head2 authorize
+=head2 C<authorize>
 
 This method exchanges the request token/secret, obtained after a successful
 login, with an access token/secret that is needed for subsequent accesses to
@@ -208,7 +211,7 @@ sub authorize
   return;
 }
 
-=head2 account_info
+=head2 C<account_info>
 
 Shows information about the user.
 
@@ -231,7 +234,7 @@ sub account_info
   return from_json $response;
 }
 
-=head2 metadata
+=head2 C<metadata>
 
 Returns all the metadata available for a given file or folder (specified
 through its C<path>).
@@ -262,7 +265,7 @@ sub metadata
   return from_json $response;
 }
 
-=head2 metadata_share
+=head2 C<metadata_share>
 
 Returns the metadata of a shared resource. Its share C<id> and C<name> are
 required.
@@ -295,7 +298,7 @@ sub metadata_share
   return from_json $response;
 }
 
-=head2 list_links
+=head2 C<list_links>
 
 Returns a list of all the public links created by the user.
 
@@ -316,7 +319,7 @@ sub list_links
   return from_json $response;
 }
 
-=head2 delete_link
+=head2 C<delete_link>
 
 Delete a public link of a file or folder. Its share C<id> is required.
 
@@ -342,15 +345,15 @@ sub delete_link
   return from_json $response;
 }
 
-=head2 shares
+=head2 C<share>
 
 Create a public link of a file or folder. Its C<path> is required.
 
-    $response = $cloud->shares( path => '/Photos/logo.png' );
+    $response = $cloud->share( path => '/Photos/logo.png' );
 
 =cut
 
-sub shares
+sub share
 {
   my $self = shift;
   my %args = @_;
@@ -369,7 +372,7 @@ sub shares
   return from_json $response;
 }
 
-=head2 share_folder
+=head2 C<share_folder>
 
 Share a folder with another user. The folder's C<path>, and a target C<email>
 are required.
@@ -400,7 +403,7 @@ sub share_folder
   return from_json $response;
 }
 
-=head2 list_shared_folders
+=head2 C<list_shared_folders>
 
 Returns a list of all the shared folders accessed by the user.
 
@@ -421,7 +424,7 @@ sub list_shared_folders
   return from_json $response;
 }
 
-=head2 list
+=head2 C<list>
 
 Returns metadata for a given file or folder (specified through its C<path>).
 Similar to the actual C<metadata> method, but with less items and more options.
@@ -452,15 +455,15 @@ sub list
   return from_json $response;
 }
 
-=head2 thumbnails
+=head2 C<thumbnail>
 
 Return the thumbnail (in binary format) of the file specified in the C<path>.
 
-    $content = $cloud->thumbnails( path => '/Photos/logo.png' );
+    $content = $cloud->thumbnail( path => '/Photos/logo.png' );
 
 =cut
 
-sub thumbnails
+sub thumbnail
 {
   my $self = shift;
   my %args = @_;
@@ -482,7 +485,7 @@ sub thumbnails
   return $response;
 }
 
-=head2 search
+=head2 C<search>
 
 Search the C<path> for a file, or folder, that matches the given C<query>.
 
@@ -512,7 +515,7 @@ sub search
   return from_json $response;
 }
 
-=head2 revisions
+=head2 C<revisions>
 
 Obtain information of the most recent version on the file in the C<path>.
 
@@ -542,7 +545,7 @@ sub revisions
   return from_json $response;
 }
 
-=head2 restore
+=head2 C<restore>
 
 Restore a specific C<revision> of the file in the C<path>.
 
@@ -575,7 +578,7 @@ sub restore
   return from_json $response;
 }
 
-=head2 media
+=head2 C<media>
 
 Return a direct link for the file in the C<path>. If it's a video/audio file, a
 streaming link is returned per the C<protocol> parameter.
@@ -608,7 +611,7 @@ sub media
   return from_json $response;
 }
 
-=head2 delta
+=head2 C<delta>
 
 List the current changes available for syncing.
 
@@ -635,7 +638,7 @@ sub delta
   return from_json $response;
 }
 
-=head2 put_file
+=head2 C<put_file>
 
 Upload a file to CloudPT.
 You can choose to C<overwrite> it (this being either C<true> or C<false>), if
@@ -688,7 +691,7 @@ sub put_file
   return from_json $response;
 }
 
-=head2 get_file
+=head2 C<get_file>
 
 Download a file from CloudPT. A specific C<rev> can be requested.
 
@@ -717,7 +720,7 @@ sub get_file
   return $response;
 }
 
-=head2 copy
+=head2 C<copy>
 
 From a file in C<from_path>, create a copy in C<to_path>.
 Alternatively, instead of C<from_path>, a copy from a file reference can be
@@ -750,7 +753,7 @@ sub copy
   return from_json $response;
 }
 
-=head2 copy_ref
+=head2 C<copy_ref>
 
 Creates, and returns, a copy reference to the file in C<path>.
 This can be used to copy that file to another user's CloudPT.
@@ -779,7 +782,7 @@ sub copy_ref
   return from_json $response;
 }
 
-=head2 move
+=head2 C<move>
 
 Take a file in C<from_path>, and move it into C<to_path>.
 
@@ -809,7 +812,7 @@ sub move
   return from_json $response;
 }
 
-=head2 create_folder
+=head2 C<create_folder>
 
 Create a folder in C<path>.
 
@@ -837,7 +840,7 @@ sub create_folder
   return from_json $response;
 }
 
-=head2 delete
+=head2 C<delete>
 
 Delete a file in C<path>.
 
@@ -865,7 +868,7 @@ sub delete
   return from_json $response;
 }
 
-=head2 undelete
+=head2 C<undelete>
 
 Undelete a file, or folder, previously removed.
 
@@ -895,7 +898,7 @@ sub undelete
   return from_json $response;
 }
 
-=head2 error
+=head2 C<error>
 
 Return the most recent error message. If the last API request was completed
 successfully, this method will return an empty string.
@@ -906,7 +909,7 @@ sub error { shift->{errstr} }
 
 =head1 INTERNAL API
 
-=head2 _nonce
+=head2 C<_nonce>
 
 Generate a unique 'nonce' to be used on each request.
 
@@ -914,7 +917,7 @@ Generate a unique 'nonce' to be used on each request.
 
 sub _nonce { int( rand 2 ** 32 ) x 2 }
 
-=head2 _execute
+=head2 C<_execute>
 
 Execute a particular API request to the service's protected resources.
 
