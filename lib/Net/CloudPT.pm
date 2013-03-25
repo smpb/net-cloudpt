@@ -60,16 +60,20 @@ sub new
 
   if ( $self->{key} and $self->{secret} )
   {
-    $self->{ua} ||= LWP::UserAgent->new;
+    $self->{request_token}  ||= '';
+    $self->{request_secret} ||= '';
+    $self->{access_token}   ||= '';
+    $self->{access_secret}  ||= '';
+
+    $self->{ua}             ||= LWP::UserAgent->new;
 
     $self->{callback_url}   ||= 'oob',
     $self->{request_url}    ||= 'https://cloudpt.pt/oauth/request_token',
     $self->{authorize_url}  ||= 'https://cloudpt.pt/oauth/authorize',
     $self->{access_url}     ||= 'https://cloudpt.pt/oauth/access_token',
 
-    $self->{root} ||= 'cloudpt'; # or 'sandbox'
-
-    $self->{debug} ||= $ENV{DEBUG};
+    $self->{root}           ||= 'cloudpt'; # or 'sandbox'
+    $self->{debug}          ||= $ENV{DEBUG};
 
     return $self;
   }
@@ -210,6 +214,23 @@ sub authorize
   # nok
   return;
 }
+
+=head2 C<is_authorized>
+
+This method returns a boolean answer regarding the authorization status of the current credentials.
+
+    $boolean = $cloud->is_authorized;
+
+=cut
+
+sub is_authorized
+{
+  my $self = shift;
+
+  my $response = $self->account_info;
+  return ($response->{http_response_code} == 200);
+}
+
 
 =head2 C<account_info>
 
