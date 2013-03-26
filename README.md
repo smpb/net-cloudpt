@@ -53,6 +53,12 @@ the service's API.
 
 The `verifier` PIN parameter is required.
 
+## `is_authorized`
+
+This method returns a boolean answer regarding the authorization status of the current credentials.
+
+    $boolean = $cloud->is_authorized;
+
 ## `account_info`
 
 Shows information about the user.
