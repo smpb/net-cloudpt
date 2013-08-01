@@ -250,6 +250,7 @@ sub account_info
   my $response = $self->_execute(
     command   => 'Account/Info',
     endpoint  => $endpoint,
+    to_url    => $args{to_url} || 0,
   );
 
   return from_json $response;
@@ -271,6 +272,8 @@ sub metadata
 
   my $path = $args{path};
   delete $args{path};
+  my $to_url = $args{to_url} || 0;
+  delete $args{to_url};
 
   my $endpoint  = 'publicapi';
   my $options   = { %args };
@@ -281,6 +284,7 @@ sub metadata
     path      => $path,
     root      => $self->{root},
     options   => $options,
+    to_url    => $to_url,
   );
 
   return from_json $response;
@@ -303,6 +307,9 @@ sub metadata_share
   my %args = @_;
 
   my $endpoint  = 'publicapi';
+  my $to_url    = $args{to_url} || 0;
+  delete $args{to_url};
+
   my $options   = { %args };
 
   delete $options->{id};
@@ -314,6 +321,7 @@ sub metadata_share
     root      => $args{id},
     path      => $args{name},
     options   => $options,
+    to_url    => $to_url,
   );
 
   return from_json $response;
@@ -330,11 +338,13 @@ Returns a list of all the public links created by the user.
 sub list_links
 {
   my $self = shift;
+  my %args = @_;
   my $endpoint = 'publicapi';
 
   my $response = $self->_execute(
     command   => 'ListLinks',
     endpoint  => $endpoint,
+    to_url    => $args{to_url} || 0,
   );
 
   return from_json $response;
@@ -361,6 +371,7 @@ sub delete_link
     endpoint  => $endpoint,
     method    => $method,
     content   => { shareid => $args{id} },
+    to_url    => $args{to_url} || 0,
   );
 
   return from_json $response;
@@ -388,6 +399,7 @@ sub share
     method    => $method,
     root      => $self->{root},
     path      => $args{path},
+    to_url    => $args{to_url} || 0,
   );
 
   return from_json $response;
@@ -419,6 +431,7 @@ sub share_folder
     root      => $self->{root},
     path      => $args{path},
     content   => { to_email => $args{email} },
+    to_url    => $args{to_url} || 0,
   );
 
   return from_json $response;
@@ -435,11 +448,13 @@ Returns a list of all the shared folders accessed by the user.
 sub list_shared_folders
 {
   my $self = shift;
+  my %args = @_;
   my $endpoint = 'publicapi';
 
   my $response = $self->_execute(
     command   => 'ListSharedFolders',
     endpoint  => $endpoint,
+    to_url    => $args{to_url} || 0,
   );
 
   return from_json $response;
@@ -461,6 +476,8 @@ sub list
 
   my $path = $args{path} || '';
   delete $args{path};
+  my $to_url = $args{to_url} || 0;
+  delete $args{to_url};
 
   my $endpoint  = 'publicapi';
   my $options   = { %args };
@@ -471,6 +488,7 @@ sub list
     path      => $path,
     root      => $self->{root},
     options   => $options,
+    to_url    => $to_url,
   );
 
   return from_json $response;
@@ -491,6 +509,8 @@ sub thumbnail
 
   my $path = $args{path} || '';
   delete $args{path};
+  my $to_url = $args{to_url} || 0;
+  delete $args{to_url};
 
   my $endpoint  = 'api-content';
   my $options   = { %args };
@@ -501,6 +521,7 @@ sub thumbnail
     path      => $path,
     root      => $self->{root},
     options   => $options,
+    to_url    => $to_url,
   );
 
   return $response;
@@ -521,6 +542,8 @@ sub search
 
   my $path = $args{path} || '';
   delete $args{path};
+  my $to_url = $args{to_url} || 0;
+  delete $args{to_url};
 
   my $endpoint  = 'publicapi';
   my $options   = { %args };
@@ -531,6 +554,7 @@ sub search
     path      => $path,
     root      => $self->{root},
     options   => $options,
+    to_url    => $to_url,
   );
 
   return from_json $response;
@@ -551,6 +575,8 @@ sub revisions
 
   my $path = $args{path} || '';
   delete $args{path};
+  my $to_url = $args{to_url} || 0;
+  delete $args{to_url};
 
   my $endpoint  = 'publicapi';
   my $options   = { %args };
@@ -561,6 +587,7 @@ sub revisions
     path      => $path,
     root      => $self->{root},
     options   => $options,
+    to_url    => $to_url,
   );
 
   return from_json $response;
@@ -594,6 +621,7 @@ sub restore
     path      => $path,
     root      => $self->{root},
     content   => { rev => $args{revision} },
+    to_url    => $args{to_url} || 0,
   );
 
   return from_json $response;
@@ -616,6 +644,8 @@ sub media
   my $method = 'POST';
   my $path = $args{path} || '';
   delete $args{path};
+  my $to_url = $args{to_url} || 0;
+  delete $args{to_url};
 
   my $endpoint  = 'publicapi';
   my $options   = { %args };
@@ -627,6 +657,7 @@ sub media
     path      => $path,
     root      => $self->{root},
     content   => $options,
+    to_url    => $to_url,
   );
 
   return from_json $response;
@@ -645,6 +676,9 @@ sub delta
   my $self = shift;
   my %args = @_;
 
+  my $to_url = $args{to_url} || 0;
+  delete $args{to_url};
+
   my $method    = 'POST';
   my $endpoint  = 'publicapi';
   my $options   = { %args };
@@ -654,6 +688,7 @@ sub delta
     endpoint  => $endpoint,
     method    => $method,
     content   => $options,
+    to_url    => $to_url,
   );
 
   return from_json $response;
@@ -695,8 +730,11 @@ sub put_file
     }
   }
 
+  my $to_url = $args{to_url} || 0;
+
   delete $args{path};
   delete $args{file};
+  delete $args{to_url};
   delete $args{content};
 
   my $response = $self->_execute(
@@ -707,6 +745,7 @@ sub put_file
     root      => $self->{root},
     content   => $content,
     options   => { %args },
+    to_url    => $to_url,
   );
 
   return from_json $response;
@@ -727,6 +766,8 @@ sub get_file
 
   my $endpoint  = 'api-content';
   my $path      = $args{path} || '';
+  my $to_url    = $args{to_url} || 0;
+  delete $args{to_url};
 
   delete $args{path};
 
@@ -736,6 +777,7 @@ sub get_file
     path      => $path,
     root      => $self->{root},
     options   => { %args },
+    to_url    => $to_url,
   );
 
   return $response;
@@ -759,6 +801,9 @@ sub copy
   my $self = shift;
   my %args = @_;
 
+  my $to_url = $args{to_url} || 0;
+  delete $args{to_url};
+
   my $method    = 'POST';
   my $endpoint  = 'publicapi';
 
@@ -769,6 +814,7 @@ sub copy
     method    => $method,
     endpoint  => $endpoint,
     content   => { %args },
+    to_url    => $to_url,
   );
 
   return from_json $response;
@@ -798,6 +844,7 @@ sub copy_ref
     endpoint  => $endpoint,
     path      => $path,
     root      => $self->{root},
+    to_url    => $args{to_url} || 0,
   );
 
   return from_json $response;
@@ -818,6 +865,9 @@ sub move
   my $self = shift;
   my %args = @_;
 
+  my $to_url = $args{to_url} || 0;
+  delete $args{to_url};
+
   my $method    = 'POST';
   my $endpoint  = 'publicapi';
 
@@ -828,6 +878,7 @@ sub move
     method    => $method,
     endpoint  => $endpoint,
     content   => { %args },
+    to_url    => $to_url,
   );
 
   return from_json $response;
@@ -846,6 +897,9 @@ sub create_folder
   my $self = shift;
   my %args = @_;
 
+  my $to_url = $args{to_url} || 0;
+  delete $args{to_url};
+
   my $method    = 'POST';
   my $endpoint  = 'publicapi';
 
@@ -856,6 +910,7 @@ sub create_folder
     method    => $method,
     endpoint  => $endpoint,
     content   => { %args },
+    to_url    => $to_url,
   );
 
   return from_json $response;
@@ -874,6 +929,9 @@ sub delete
   my $self = shift;
   my %args = @_;
 
+  my $to_url = $args{to_url} || 0;
+  delete $args{to_url};
+
   my $method    = 'POST';
   my $endpoint  = 'publicapi';
 
@@ -884,6 +942,7 @@ sub delete
     method    => $method,
     endpoint  => $endpoint,
     content   => { %args },
+    to_url    => $to_url,
   );
 
   return from_json $response;
@@ -914,6 +973,7 @@ sub undelete
     endpoint  => $endpoint,
     path      => $path,
     root      => $self->{root},
+    to_url    => $args{to_url} || 0,
   );
 
   return from_json $response;
@@ -983,7 +1043,14 @@ sub _execute
   cluck "Executing '" . $args{method} . "' request to: '" . $uri->as_string . "'" if ( $self->{debug} );
 
   my $response;
-  if ( $args{method} =~ /GET/i )
+  if ( $args{to_url} )
+  {
+    return to_json {
+      method => $args{method},
+      url    => $request->to_url,
+    };
+  }
+  elsif ( $args{method} =~ /GET/i )
   {
     $response = $self->{ua}->get($request->to_url);
   }
