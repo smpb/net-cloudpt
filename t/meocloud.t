@@ -14,13 +14,15 @@ use lib join '/', File::Spec->splitdir(dirname(__FILE__)), '../lib/';
 
 BEGIN
 {
-  use_ok('Net::CloudPT');
+  use_ok('Net::MeoCloud');
 }
 
 SKIP:
 {
   my $key;
   my $secret;
+  my $access_token;
+  my $access_secret;
 
   my $auth_file = join '/', File::Spec->splitdir(dirname(__FILE__)), '../etc/auth.cfg';
 
@@ -30,8 +32,10 @@ SKIP:
     my $auth = eval do { local $/; <$fh> };
     close $fh;
 
-    $key    = $auth->{key};
-    $secret = $auth->{secret};
+    $key           = $auth->{consumer_key};
+    $secret        = $auth->{consumer_secret};
+    $access_token  = $auth->{access_token};
+    $access_secret = $auth->{access_secret};
   }
 
   unless ( defined $key and defined $secret )
@@ -47,20 +51,33 @@ SKIP:
   like($key, '/[-\w\d]+/', 'The key appears to be valid.');
   like($secret, '/\d+/', 'The secret appears to be valid.');
 
-  my $cloud = Net::CloudPT->new(
+  my $cloud = Net::MeoCloud->new(
       key     => $key,
       secret  => $secret,
+      root    => 'sandbox',
     );
-  is(ref $cloud, 'Net::CloudPT', 'got a CloudPT interface');
+  is(ref $cloud, 'Net::MeoCloud', 'got a MEO Cloud interface');
 
-  my $url = $cloud->login;
-  like($url, "/$RE{URI}{HTTP}{ -scheme => qr{https?} }/", 'The login process returned an auth URL.');
+  ok(! $cloud->is_authorized, 'Credentials not yet valid');
 
-  print "Authorize this test suite here: '$url'\n";
-  print 'What is the verifier PIN? ';
-  my $pin = <>; chomp $pin;
-  like($pin, '/\d{10}/', 'The PIN is a 10-digit number');
-  ok($cloud->authorize( verifier => $pin ), 'Authorized');
+  if ($access_token and $access_secret)
+  {
+    $cloud->{access_token}  = $access_token;
+    $cloud->{access_secret} = $access_secret;
+  }
+  else
+  {
+    my $url = $cloud->login;
+    like($url, "/$RE{URI}{HTTP}{ -scheme => qr{https?} }/", 'The login process returned an auth URL.');
+
+    print "Authorize this test suite here: '$url'\n";
+    print 'What is the verifier PIN? ';
+    my $pin = <>; chomp $pin;
+    like($pin, '/\d{10}/', 'The PIN is a 10-digit number');
+    ok($cloud->authorize( verifier => $pin ), 'Authorized');
+  }
+
+  ok($cloud->is_authorized, 'Credentials validated');
 
   my $data;
 

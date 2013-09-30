@@ -1,4 +1,4 @@
-package Net::CloudPT;
+package Net::MeoCloud;
 
 use strict;
 use warnings;
@@ -13,7 +13,7 @@ use Carp qw/carp cluck/;
 
 =head1 NAME
 
-Net::CloudPT - A CloudPT interface
+Net::MeoCloud - A MEO Cloud interface
 
 =head1 VERSION
 
@@ -26,13 +26,13 @@ our $VERSION = '0.01';
 =head1 SYNOPSYS
 
 This module is a Perl interface to the API for the Portuguese cloud storage
-service CloudPT. You can learn more about it at L<http://www.cloudpt.pt>.
+service MEO Cloud. You can learn more about it at L<http://www.meocloud.pt>.
 
 Quick start:
 
-    use Net::CloudPT;
+    use Net::MeoCloud;
 
-    my $cloud = Net::CloudPT->new( key => 'KEY', secret => 'SECRET' );
+    my $cloud = Net::MeoCloud->new( key => 'KEY', secret => 'SECRET' );
     $cloud->login;
 
     # the user manually authorizes the app, retrieving the verifier PIN...
@@ -42,13 +42,13 @@ Quick start:
     my $response = $cloud->share( path => '/Photos/logo.png' );
     my $data = $cloud->get_file( path => '/Photos/logo.png' );
 
-The particular details regarding the API can be found at L<https://cloudpt.pt/documentation>
+The particular details regarding the API can be found at L<https://meocloud.pt/documentation>
 
 =head1 API
 
 =head2 C<new>
 
-Create a new C<Net::CloudPT> object. The C<key> and C<secret> parameters are required.
+Create a new C<Net::MeoCloud> object. The C<key> and C<secret> parameters are required.
 
 =cut
 
@@ -68,11 +68,11 @@ sub new
     $self->{ua}             ||= LWP::UserAgent->new;
 
     $self->{callback_url}   ||= 'oob',
-    $self->{request_url}    ||= 'https://cloudpt.pt/oauth/request_token',
-    $self->{authorize_url}  ||= 'https://cloudpt.pt/oauth/authorize',
-    $self->{access_url}     ||= 'https://cloudpt.pt/oauth/access_token',
+    $self->{request_url}    ||= 'https://meocloud.pt/oauth/request_token',
+    $self->{authorize_url}  ||= 'https://meocloud.pt/oauth/authorize',
+    $self->{access_url}     ||= 'https://meocloud.pt/oauth/access_token',
 
-    $self->{root}           ||= 'cloudpt'; # or 'sandbox'
+    $self->{root}           ||= 'meocloud'; # or 'sandbox'
     $self->{debug}          ||= $ENV{DEBUG};
 
     return $self;
@@ -94,7 +94,7 @@ If the handshake is successful, a request token/secret is obtained which allows
 an authorization URL to be returned. This URL must be opened by the user to
 explicitly authorize access to the service's account.
 
-Furthermore, CloudPT then either redirects the user back to the callback URL
+Furthermore, MEO Cloud then either redirects the user back to the callback URL
 (if defined in C<$self-E<gt>{callback_url}>), or openly provides a PIN number
 that will be required to verify that the user's authorization is valid.
 
@@ -696,7 +696,7 @@ sub delta
 
 =head2 C<put_file>
 
-Upload a file to CloudPT.
+Upload a file to MEO Cloud.
 You can choose to C<overwrite> it (this being either C<true> or C<false>), if
 it already exists, as well as choose to overwrite a C<parent_rev> of the file.
 
@@ -753,7 +753,7 @@ sub put_file
 
 =head2 C<get_file>
 
-Download a file from CloudPT. A specific C<rev> can be requested.
+Download a file from MEO Cloud. A specific C<rev> can be requested.
 
     $data = $cloud->get_file( path => '/Photos/logo2.png' );
 
@@ -823,7 +823,7 @@ sub copy
 =head2 C<copy_ref>
 
 Creates, and returns, a copy reference to the file in C<path>.
-This can be used to copy that file to another user's CloudPT.
+This can be used to copy that file to another user's MEO Cloud.
 
     $response = $cloud->copy_ref( path => '/Music/cover.png' );
 
@@ -1013,7 +1013,7 @@ sub _execute
   $args{endpoint} ||= 'publicapi'; # 'api-content'
 
   # build the request URI
-  my @uri_bits = ( 'https://' . $args{endpoint} . '.cloudpt.pt/1' );
+  my @uri_bits = ( 'https://' . $args{endpoint} . '.meocloud.pt/1' );
   push @uri_bits, $args{command};
   push @uri_bits, $args{root} if ( defined $args{root} );
   if ( defined $args{path} )

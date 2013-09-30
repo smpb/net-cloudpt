@@ -1,6 +1,6 @@
 # NAME
 
-Net::CloudPT - A CloudPT interface
+Net::MeoCloud - A MEO Cloud interface
 
 # VERSION
 
@@ -9,13 +9,13 @@ Version 0.01
 # SYNOPSYS
 
 This module is a Perl interface to the API for the Portuguese cloud storage
-service CloudPT. You can learn more about it at [http://www.cloudpt.pt](http://www.cloudpt.pt).
+service MEO Cloud. You can learn more about it at [http://www.meocloud.pt](http://www.meocloud.pt).
 
 Quick start:
 
-    use Net::CloudPT;
+    use Net::MeoCloud;
 
-    my $cloud = Net::CloudPT->new( key => 'KEY', secret => 'SECRET' );
+    my $cloud = Net::MeoCloud->new( key => 'KEY', secret => 'SECRET' );
     $cloud->login;
 
     # the user manually authorizes the app, retrieving the verifier PIN...
@@ -25,13 +25,13 @@ Quick start:
     my $response = $cloud->share( path => '/Photos/logo.png' );
     my $data = $cloud->get_file( path => '/Photos/logo.png' );
 
-The particular details regarding the API can be found at [https://cloudpt.pt/documentation](https://cloudpt.pt/documentation)
+The particular details regarding the API can be found at [https://meocloud.pt/documentation](https://meocloud.pt/documentation)
 
 # API
 
 ## `new`
 
-Create a new `Net::CloudPT` object. The `key` and `secret` parameters are required.
+Create a new `Net::MeoCloud` object. The `key` and `secret` parameters are required.
 
 ## `login`
 
@@ -41,7 +41,7 @@ If the handshake is successful, a request token/secret is obtained which allows
 an authorization URL to be returned. This URL must be opened by the user to
 explicitly authorize access to the service's account.
 
-Furthermore, CloudPT then either redirects the user back to the callback URL
+Furthermore, MEO Cloud then either redirects the user back to the callback URL
 (if defined in `$self->{callback_url}`), or openly provides a PIN number
 that will be required to verify that the user's authorization is valid.
 
@@ -163,7 +163,7 @@ List the current changes available for syncing.
 
 ## `put_file`
 
-Upload a file to CloudPT.
+Upload a file to MEO Cloud.
 You can choose to `overwrite` it (this being either `true` or `false`), if
 it already exists, as well as choose to overwrite a `parent_rev` of the file.
 
@@ -171,7 +171,7 @@ it already exists, as well as choose to overwrite a `parent_rev` of the file.
 
 ## `get_file`
 
-Download a file from CloudPT. A specific `rev` can be requested.
+Download a file from MEO Cloud. A specific `rev` can be requested.
 
     $data = $cloud->get_file( path => '/Photos/logo2.png' );
 
@@ -189,7 +189,7 @@ done with `from_copy_ref`. The reference is generated from a previous call to
 ## `copy_ref`
 
 Creates, and returns, a copy reference to the file in `path`.
-This can be used to copy that file to another user's CloudPT.
+This can be used to copy that file to another user's MEO Cloud.
 
     $response = $cloud->copy_ref( path => '/Music/cover.png' );
 

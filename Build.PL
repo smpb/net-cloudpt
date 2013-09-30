@@ -6,9 +6,9 @@ use warnings;
 use Module::Build;
 
 my $build = Module::Build->new(
-  module_name   => 'Net::CloudPT',
+  module_name   => 'Net::MeoCloud',
   dist_author   => 'Sérgio Bernardino <code@sergiobernardino.net>',
-  dist_abstract => 'Net::CloudPT - A CloudPT interface',
+  dist_abstract => 'Net::MeoCloud - A MeoCloud interface',
   license       => 'perl',
   requires      => {
     'URI'                   => 0,

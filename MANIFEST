@@ -1,6 +1,6 @@
 Build.PL
 etc/auth.cfg
-lib/Net/CloudPT.pm
+lib/Net/MeoCloud.pm
 MANIFEST			This list of files
 README.md
-t/cloudpt.t
+t/meocloud.t
