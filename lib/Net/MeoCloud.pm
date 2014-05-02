@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use URI;
+use URI::Escape;
 use JSON;
 use Net::OAuth; $Net::OAuth::PROTOCOL_VERSION = Net::OAuth::PROTOCOL_VERSION_1_0A;
 use LWP::UserAgent;
@@ -1020,7 +1021,18 @@ sub _execute
   {
     $args{path} =~ s/^\/+//g; # remove the leading slash
     $args{path} =~ s/\/{2,}/\//g; # remove possible duplicate slashes
-    push @uri_bits, $args{path}
+
+    # RFC 3986 specifies that URI path components not contain unencoded reserved characters
+    # A file whose name has chars from the reserved set below needs to have that char escaped
+
+    my @file  = split( '/', $args{path} );
+
+    if (defined $file[-1] ) {
+      my $reserved_chars = qr/[ \/ \[ \] ? # @ ! $ & ' ( ) * + , ; : = ]/x;
+      $file[-1] =~ s/($reserved_chars)/uri_escape($1)/eg;
+    }
+
+    push @uri_bits, ( join '/', @file );
   }
 
   my $uri = URI->new( join '/', @uri_bits );
