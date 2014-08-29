@@ -119,7 +119,7 @@ sub login
 
   $request->sign;
 
-  my $response = $self->{ua}->post($request->to_url);
+  my $response = $self->{ua}->post($request->to_url, Content_Type => 'form-data', Content => $request->to_post_body);
 
   if ( $response->is_success )
   {
@@ -184,7 +184,7 @@ sub authorize
 
     $request->sign;
 
-    my $response = $self->{ua}->post($request->to_url);
+    my $response = $self->{ua}->post($request->to_url, Content_Type => 'form-data', Content => $request->to_post_body);
 
     if ( $response->is_success )
     {
